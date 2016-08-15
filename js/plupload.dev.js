@@ -1585,10 +1585,22 @@ plupload.Uploader = function(options) {
 			// Upload next file but detach it from the error event
 			// since other custom listeners might want to stop the queue
 			if (up.state == plupload.STARTED) { // upload in progress
-				up.trigger('CancelUpload');
-				delay(function() {
-					uploadNext.call(up);
-				}, 1);
+				var err_on_currfile_uploading = true;
+				for (i = 0; i < up.files.length; i++) {
+					if (up.files[i].status == plupload.UPLOADING) {
+						if(up.files[i].id == err.file.id) {
+							err_on_currfile_uploading = true;
+						} else {
+							err_on_currfile_uploading = false;
+						}
+					}
+				}
+				if(err_on_currfile_uploading) {
+					up.trigger('CancelUpload', up, err.file);
+					delay(function() {
+						uploadNext.call(up);
+					}, 1);
+				}
 			}
 		}
 	}
